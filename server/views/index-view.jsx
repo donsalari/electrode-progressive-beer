@@ -2,14 +2,25 @@ import ReduxRouterEngine from 'electrode-redux-router-engine';
 import React from 'react';
 import {routes} from "../../client/routes";
 import {createStore} from "redux";
+import {graphql} from 'graphql';
+import schema from './schema';
 import rootReducer from "../../client/reducers";
 import beerStyles from "../plugins/beer/data/styles.json";
 import injectTapEventPlugin from 'react-tap-event-plugin';
 
 const Promise = require("bluebird");
 const fs = require('fs');
-
 const DEFAULT_BEER_CARDS = 300;
+
+function executeQuery(query) {
+  return (resolve, reject) => {
+    graphql(schema, query)
+    .then((result) => {
+      console.log(result.data);
+      resolve(result.data);
+    });
+  }
+}
 
 function importBeers(styleId){
   let result = [];
@@ -36,14 +47,13 @@ function importBeers(styleId){
   return result;
 }
 
-function storeInitializer(req) {
-  let initialState;
+function queryInitializer(req) {
+  let query = '';
 
   if(req.path === "/") {
     let firstRender = req.url.query.prefetch_cards ? req.url.query.prefetch_cards : DEFAULT_BEER_CARDS;
-    let data = beerStyles.data.slice(0, firstRender);
-
-    initialState = {data};
+    // (limit: ${firstRender})
+    query = `query {beerstyles {id, name}}`;
   } else if(req.path === "/beerstyle") {
     let styleId = Number(req.url.query.style);
     let data = null;
@@ -56,8 +66,8 @@ function storeInitializer(req) {
       }
     }
 
-    data.beers = beersOfStyleID;
-    initialState = {data};
+    data.beers = beersOfStyleID; //(id: "${styleId}")
+    query = `query {beerstyles(id: 1) { description}}`;
   } else if(req.path === "/beerdetails") {
     let styleId = Number(req.url.query.style);
     let beerId = req.url.query.beer;
@@ -72,20 +82,20 @@ function storeInitializer(req) {
     }
 
     initialState = {data};
-  } else {
-    initialState = {};
   }
 
-  return createStore(rootReducer, initialState);
+  return query;
 }
 
 function createReduxStore(req, match) {
-  const store = storeInitializer(req);
+  let query = queryInitializer(req);
+
   return Promise.all([
-      // DO ASYNC THUNK ACTIONS HERE : store.dispatch(boostrapApp())
+      new Promise(executeQuery(query)),
       Promise.resolve({})
-    ]).then(() => {
-      return store;
+    ]).then((values) => {
+      const initialState = {data: values[0].beerstyles};
+      return createStore(rootReducer, initialState);
   });
 }
 

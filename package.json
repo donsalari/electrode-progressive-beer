@@ -33,6 +33,7 @@
   "dependencies": {
     "above-the-fold-only-server-render": "^1.0.3",
     "bluebird": "^3.4.6",
+    "body-parser": "^1.15.2",
     "electrode-archetype-react-app": "^1.6.0",
     "electrode-csrf-jwt": "^1.0.0",
     "electrode-react-ssr-caching": "^0.1.5",
@@ -40,9 +41,12 @@
     "electrode-redux-router-engine": "^1.2.6",
     "electrode-server": "^1.2.1",
     "electrode-static-paths": "^1.0.0",
+    "express-graphql": "^0.6.1",
+    "graphql": "^0.8.2",
     "isomorphic-fetch": "^2.2.1",
     "lodash": "^4.17.2",
     "material-ui": "^0.16.5",
+    "radium": "^0.18.1",
     "react-search-input": "^0.10.3",
     "react-tap-event-plugin": "^2.0.0",
     "redux-thunk": "^2.1.0"
